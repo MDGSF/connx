@@ -148,7 +148,7 @@ pub fn encode_str(src: &str) -> String {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_base64 {
     use super::*;
 
     #[test]
