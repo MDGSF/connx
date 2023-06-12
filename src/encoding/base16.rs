@@ -5,14 +5,14 @@
 #[derive(Debug)]
 pub enum Base16Error {
     InvalidByte(InvalidByteError),
-    Length,
+    OddLength,
 }
 
 impl std::fmt::Display for Base16Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidByte(e) => e.fmt(f),
-            Self::Length => write!(f, "encoding/hex: odd length hex string"),
+            Self::OddLength => write!(f, "encoding/base16: odd length hex string"),
         }
     }
 }
@@ -38,7 +38,7 @@ impl InvalidByteError {
 
 impl std::fmt::Display for InvalidByteError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "encoding/hex: invalid byte: {}", self.b)
+        write!(f, "encoding/base16: invalid byte: {}", self.b)
     }
 }
 
@@ -92,7 +92,7 @@ pub fn decode(dst: &mut [u8], src: &[u8]) -> Result<usize, Base16Error> {
     }
     if src.len() % 2 == 1 {
         let _ = from_hex_char(src[src_idx - 1])?;
-        return Err(Base16Error::Length);
+        return Err(Base16Error::OddLength);
     }
     Ok(dst_idx)
 }
