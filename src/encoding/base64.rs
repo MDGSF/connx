@@ -227,9 +227,9 @@ pub fn encode(dst: &mut [u8], src: &[u8], encode_map: &[u8]) {
     match remain {
         0 => return,
         1 => {
-            let val: u32 = u32::from(src[src_idx + 0]) << 16;
-            dst[dst_idx + 0] = encode_map[(val >> 18 & 0x3F) as usize];
-            dst[dst_idx + 1] = encode_map[(val >> 12 & 0x3F) as usize];
+            let val: u32 = u32::from(src[src_idx + 0]) << 8;
+            dst[dst_idx + 0] = encode_map[(val >> 10 & 0x3F) as usize];
+            dst[dst_idx + 1] = encode_map[(val >> 4 & 0x3F) as usize];
             dst[dst_idx + 2] = PAD_CHAR;
             dst[dst_idx + 3] = PAD_CHAR;
         }
