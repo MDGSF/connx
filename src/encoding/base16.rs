@@ -1,4 +1,5 @@
 //! RFC4648 implemented, base16 encoding.
+//!
 //! Base 16 encoding is the standard case-insensitive hex encoding and
 //! may be referred to as "base16" or "hex".
 
