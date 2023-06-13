@@ -10,4 +10,10 @@ documentation = "https://docs.rs/connx"
 repository = "https://github.com/MDGSF/connx"
 readme = "README.md"
 
-[dependencies]
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "bench_base64"
+path = "benches/encoding/base64/base64.rs"
+harness = false
