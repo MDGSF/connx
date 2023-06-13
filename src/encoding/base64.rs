@@ -96,7 +96,6 @@ pub struct InvalidByteError {
     b: u8,
 }
 
-/// Error happens when pass invalid byte in decoded base64 string.
 impl InvalidByteError {
     pub fn new(b: u8) -> Self {
         Self { b }

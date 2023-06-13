@@ -2,7 +2,28 @@
 //!
 //! Base 16 encoding is the standard case-insensitive hex encoding and
 //! may be referred to as "base16" or "hex".
+//!
+//! # Examples
+//!
+//! Base16 encode basic usage:
+//!
+//! ```
+//! use connx::encoding::base16;
+//! let src = b"hello";
+//! let dst = base16::encode_to_string(src);
+//! assert_eq!(dst, "68656c6c6f".to_string());
+//! ```
+//!
+//! Base16 decode basic usage:
+//!
+//! ```
+//! use connx::encoding::base16;
+//! let src = "68656c6c6f";
+//! let dst = base16::decode_string(src).unwrap();
+//! assert_eq!(dst, b"hello");
+//! ```
 
+/// Errors when base16 encode and decode
 #[derive(Debug)]
 pub enum Base16Error {
     InvalidByte(InvalidByteError),
@@ -26,6 +47,7 @@ impl From<InvalidByteError> for Base16Error {
     }
 }
 
+/// Error happens when pass invalid character to decode function
 #[derive(Debug)]
 pub struct InvalidByteError {
     b: u8,
@@ -45,21 +67,68 @@ impl std::fmt::Display for InvalidByteError {
 
 impl std::error::Error for InvalidByteError {}
 
+/// Base16 encoding map
 pub const HEX_TABLE: &[u8] = b"0123456789abcdef";
 
-/// Calculate the length of an encoding of n source bytes.
-/// Specifically, it returns n * 2.
+/// Calculate base16 encoded string length
+///
+/// - @param n: raw bytes length
+/// - @return: base16 encoded string length, (n*2)
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use connx::encoding::base16;
+/// assert_eq!(base16::encode_len(0), 0);
+/// assert_eq!(base16::encode_len(1), 2);
+/// assert_eq!(base16::encode_len(2), 4);
+/// assert_eq!(base16::encode_len(3), 6);
+/// ```
 #[inline]
 pub fn encode_len(n: usize) -> usize {
     n * 2
 }
 
+/// Calculate base16 decoded data length
+///
+/// - @param n: base16 string length
+/// - @return: decoded raw bytes length, (n/2)
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use connx::encoding::base16;
+/// assert_eq!(base16::decode_len(0), 0);
+/// assert_eq!(base16::decode_len(2), 1);
+/// assert_eq!(base16::decode_len(4), 2);
+/// assert_eq!(base16::decode_len(6), 3);
+/// ```
 #[inline]
 pub fn decode_len(n: usize) -> usize {
     n / 2
 }
 
-/// Encode `src` into `dst`.
+/// Encode bytes to base16 bytes
+///
+/// - @param dst: encoded base16 bytes
+/// - @param src: raw bytes
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use connx::encoding::base16;
+/// let src = b"hello";
+/// let dst_len = base16::encode_len(src.len());
+/// let mut dst = vec![0; dst_len];
+/// base16::encode(&mut dst, src);
+/// assert_eq!(dst, b"68656c6c6f");
+/// ```
 pub fn encode(dst: &mut [u8], src: &[u8]) -> usize {
     src.iter().fold(0, |dst_idx, &src_byte| {
         dst[dst_idx] = HEX_TABLE[(src_byte >> 4) as usize];
@@ -81,6 +150,23 @@ fn from_hex_char(b: u8) -> Result<u8, InvalidByteError> {
     }
 }
 
+/// Decode base16 bytes to raw bytes
+///
+/// - @param dst: decoded raw bytes
+/// - @param src: base16 bytes
+/// - @return: raw byte size if successfully decoded.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use connx::encoding::base16;
+/// let src = b"68656c6c6f";
+/// let mut dst = vec![0; base16::decode_len(src.len())];
+/// let dst_size = base16::decode(&mut dst, src).unwrap();
+/// assert_eq!(dst, b"hello");
+/// ```
 pub fn decode(dst: &mut [u8], src: &[u8]) -> Result<usize, Base16Error> {
     let mut src_idx = 1;
     let mut dst_idx = 0;
@@ -98,12 +184,42 @@ pub fn decode(dst: &mut [u8], src: &[u8]) -> Result<usize, Base16Error> {
     Ok(dst_idx)
 }
 
+/// Encode bytes to base16 string
+///
+/// - @param src: raw bytes
+/// - @return: encoded base16 string
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use connx::encoding::base16;
+/// let src = b"hello";
+/// let dst = base16::encode_to_string(src);
+/// assert_eq!(dst, "68656c6c6f".to_string());
+/// ```
 pub fn encode_to_string(src: &[u8]) -> String {
     let mut dst = vec![0u8; encode_len(src.len())];
     encode(&mut dst, src);
     String::from_utf8(dst).unwrap()
 }
 
+/// Decode base16 string to raw bytes
+///
+/// - @param src: base16 bytes
+/// - @return: decoded raw bytes
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use connx::encoding::base16;
+/// let src = "68656c6c6f";
+/// let dst = base16::decode_string(src).unwrap();
+/// assert_eq!(dst, b"hello");
+/// ```
 pub fn decode_string(src: &str) -> Result<Vec<u8>, Base16Error> {
     let mut dst = vec![0u8; decode_len(src.len())];
     decode(&mut dst, src.as_bytes())?;
@@ -136,5 +252,21 @@ mod tests_base16 {
         );
         test_base(&[b'g'], "67");
         test_base(&[0xe3, 0xa1], "e3a1");
+    }
+
+    #[test]
+    fn test02() {
+        test_base(b"", "");
+        test_base(b"f", "66");
+        test_base(b"fo", "666f");
+        test_base(b"foo", "666f6f");
+        test_base(b"foob", "666f6f62");
+        test_base(b"fooba", "666f6f6261");
+        test_base(b"foobar", "666f6f626172");
+    }
+
+    #[test]
+    fn test03() {
+        test_base(b"hello", "68656c6c6f");
     }
 }
