@@ -17,3 +17,8 @@ criterion = "0.5.1"
 name = "bench_base64"
 path = "benches/encoding/base64/base64.rs"
 harness = false
+
+[[bench]]
+name = "bench_base32"
+path = "benches/encoding/base32/base32.rs"
+harness = false
