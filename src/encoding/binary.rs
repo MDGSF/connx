@@ -1,3 +1,51 @@
+//! Little Endian and Big Endian implemented
+//!
+//! # Examples
+//!
+//! Little Endian encode u16:
+//!
+//! ```
+//! use connx::encoding::binary::{ByteOrder, LittleEndian};
+//! let n: u16 = 0x1234;
+//! let mut b = vec![0; 2];
+//! LittleEndian::encode_u16(n, &mut b);
+//! assert_eq!(b, vec![0x34, 0x12]);
+//! assert_eq!(n, LittleEndian::decode_u16(&b));
+//! ```
+//!
+//! Big Endian encode u16:
+//!
+//! ```
+//! use connx::encoding::binary::{ByteOrder, BigEndian};
+//! let n: u16 = 0x1234;
+//! let mut b = vec![0; 2];
+//! BigEndian::encode_u16(n, &mut b);
+//! assert_eq!(b, vec![0x12, 0x34]);
+//! assert_eq!(n, BigEndian::decode_u16(&b));
+//! ```
+//!
+//! Little Endian encode u32:
+//!
+//! ```
+//! use connx::encoding::binary::{ByteOrder, LittleEndian};
+//! let n: u32 = 0x12345678;
+//! let mut b = vec![0; 4];
+//! LittleEndian::encode_u32(n, &mut b);
+//! assert_eq!(b, vec![0x78, 0x56, 0x34, 0x12]);
+//! assert_eq!(n, LittleEndian::decode_u32(&b));
+//! ```
+//!
+//! Big Endian encode u32:
+//!
+//! ```
+//! use connx::encoding::binary::{ByteOrder, BigEndian};
+//! let n: u32 = 0x12345678;
+//! let mut b = vec![0; 4];
+//! BigEndian::encode_u32(n, &mut b);
+//! assert_eq!(b, vec![0x12, 0x34, 0x56, 0x78]);
+//! assert_eq!(n, BigEndian::decode_u32(&b));
+//! ```
+
 pub trait ByteOrder {
     fn encode_u16(n: u16, b: &mut [u8]);
     fn encode_u32(n: u32, b: &mut [u8]);
@@ -7,7 +55,8 @@ pub trait ByteOrder {
     fn decode_u64(b: &[u8]) -> u64;
 }
 
-pub struct LittleEndian {}
+/// Little Endian implemented
+pub struct LittleEndian;
 
 impl ByteOrder for LittleEndian {
     fn encode_u16(n: u16, b: &mut [u8]) {
@@ -53,7 +102,8 @@ impl ByteOrder for LittleEndian {
     }
 }
 
-pub struct BigEndian {}
+/// Big Endian implemented
+pub struct BigEndian;
 
 impl ByteOrder for BigEndian {
     fn encode_u16(n: u16, b: &mut [u8]) {
