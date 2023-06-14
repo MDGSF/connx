@@ -178,6 +178,7 @@ pub fn encode_len(src_len: usize) -> usize {
 /// assert_eq!(base64::decode_len(8), 6);
 /// assert_eq!(base64::decode_len(12), 9);
 /// ```
+#[inline]
 pub fn decode_len(n: usize) -> usize {
     n / 4 * 3
 }
