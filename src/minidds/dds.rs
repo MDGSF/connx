@@ -1,5 +1,5 @@
-pub mod core;
 pub mod domain;
-pub mod publisher;
-pub mod subscriber;
+pub mod infrastructure;
+pub mod publication;
+pub mod subscription;
 pub mod topic;
