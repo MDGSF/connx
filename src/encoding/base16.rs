@@ -139,11 +139,11 @@ pub fn encode(dst: &mut [u8], src: &[u8]) -> usize {
 }
 
 fn from_hex_char(b: u8) -> Result<u8, InvalidByteError> {
-    if b >= b'0' && b <= b'9' {
+    if b.is_ascii_digit() {
         Ok(b - b'0')
-    } else if b >= b'a' && b <= b'f' {
+    } else if b.is_ascii_lowercase() {
         Ok(b - b'a' + 10)
-    } else if b >= b'A' && b <= b'F' {
+    } else if b.is_ascii_uppercase() {
         Ok(b - b'A' + 10)
     } else {
         Err(InvalidByteError::new(b))

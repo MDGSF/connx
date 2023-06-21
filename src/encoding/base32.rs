@@ -150,13 +150,13 @@ pub fn encode(dst: &mut [u8], src: &[u8], encode_map: &[u8]) {
     let mut dst_idx = 0;
     let n = (src_len / 5) * 5;
     while src_idx < n {
-        let val: u64 = u64::from(src[src_idx + 0]) << 32
+        let val: u64 = u64::from(src[src_idx]) << 32
             | u64::from(src[src_idx + 1]) << 24
             | u64::from(src[src_idx + 2]) << 16
             | u64::from(src[src_idx + 3]) << 8
             | u64::from(src[src_idx + 4]);
 
-        dst[dst_idx + 0] = encode_map[(val >> 35 & 0x1F) as usize];
+        dst[dst_idx] = encode_map[(val >> 35 & 0x1F) as usize];
         dst[dst_idx + 1] = encode_map[(val >> 30 & 0x1F) as usize];
         dst[dst_idx + 2] = encode_map[(val >> 25 & 0x1F) as usize];
         dst[dst_idx + 3] = encode_map[(val >> 20 & 0x1F) as usize];
@@ -171,7 +171,7 @@ pub fn encode(dst: &mut [u8], src: &[u8], encode_map: &[u8]) {
 
     let remain = src_len - src_idx;
     match remain {
-        0 => return,
+        0 => {}
         1 | 2 | 3 | 4 => {
             let mut val: u64 = 0;
             for i in 0..remain {
@@ -240,7 +240,7 @@ fn from_char(b: u8, decode_map: &[u8]) -> Result<u8, Base32Error> {
     if out == 0xFF {
         return Err(Base32Error::InvalidByte(b));
     }
-    return Ok(out);
+    Ok(out)
 }
 
 /// Decode base32 bytes to raw bytes
@@ -273,7 +273,7 @@ pub fn decode(dst: &mut [u8], src: &[u8], decode_map: &[u8]) -> Result<usize, Ba
     let mut dst_idx = 0;
     while src_idx + 8 < src_len {
         // Convert 8x 5bit to 5x 8bit
-        let val: u64 = u64::from(from_char(src[src_idx + 0], decode_map)?) << 35
+        let val: u64 = u64::from(from_char(src[src_idx], decode_map)?) << 35
             | u64::from(from_char(src[src_idx + 1], decode_map)?) << 30
             | u64::from(from_char(src[src_idx + 2], decode_map)?) << 25
             | u64::from(from_char(src[src_idx + 3], decode_map)?) << 20
@@ -282,7 +282,7 @@ pub fn decode(dst: &mut [u8], src: &[u8], decode_map: &[u8]) -> Result<usize, Ba
             | u64::from(from_char(src[src_idx + 6], decode_map)?) << 5
             | u64::from(from_char(src[src_idx + 7], decode_map)?);
 
-        dst[dst_idx + 0] = ((val >> 32) & 0xFF) as u8;
+        dst[dst_idx] = ((val >> 32) & 0xFF) as u8;
         dst[dst_idx + 1] = ((val >> 24) & 0xFF) as u8;
         dst[dst_idx + 2] = ((val >> 16) & 0xFF) as u8;
         dst[dst_idx + 3] = ((val >> 8) & 0xFF) as u8;
@@ -300,8 +300,8 @@ pub fn decode(dst: &mut [u8], src: &[u8], decode_map: &[u8]) -> Result<usize, Ba
     // 5 byte -> [c c c c c c c c]
     let mut characters_num = 0;
     let mut pad_num = 0;
-    for i in src_idx..src_len {
-        if src[i] == PAD_CHAR {
+    for &c in src.iter().take(src_len).skip(src_idx) {
+        if c == PAD_CHAR {
             pad_num += 1;
         } else {
             characters_num += 1;

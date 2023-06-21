@@ -211,11 +211,11 @@ pub fn encode(dst: &mut [u8], src: &[u8], encode_map: &[u8]) {
     let n = (src_len / 3) * 3;
     while src_idx < n {
         // Convert 3x 8bit source byte into 4 bytes
-        let val: u32 = u32::from(src[src_idx + 0]) << 16
+        let val: u32 = u32::from(src[src_idx]) << 16
             | u32::from(src[src_idx + 1]) << 8
             | u32::from(src[src_idx + 2]);
 
-        dst[dst_idx + 0] = encode_map[(val >> 18 & 0x3F) as usize];
+        dst[dst_idx] = encode_map[(val >> 18 & 0x3F) as usize];
         dst[dst_idx + 1] = encode_map[(val >> 12 & 0x3F) as usize];
         dst[dst_idx + 2] = encode_map[(val >> 6 & 0x3F) as usize];
         dst[dst_idx + 3] = encode_map[(val & 0x3F) as usize];
@@ -226,17 +226,17 @@ pub fn encode(dst: &mut [u8], src: &[u8], encode_map: &[u8]) {
 
     let remain = src_len - src_idx;
     match remain {
-        0 => return,
+        0 => {}
         1 => {
-            let val: u32 = u32::from(src[src_idx + 0]) << 8;
-            dst[dst_idx + 0] = encode_map[(val >> 10 & 0x3F) as usize];
+            let val: u32 = u32::from(src[src_idx]) << 8;
+            dst[dst_idx] = encode_map[(val >> 10 & 0x3F) as usize];
             dst[dst_idx + 1] = encode_map[(val >> 4 & 0x3F) as usize];
             dst[dst_idx + 2] = PAD_CHAR;
             dst[dst_idx + 3] = PAD_CHAR;
         }
         2 => {
-            let val: u32 = u32::from(src[src_idx + 0]) << 16 | u32::from(src[src_idx + 1]) << 8;
-            dst[dst_idx + 0] = encode_map[(val >> 18 & 0x3F) as usize];
+            let val: u32 = u32::from(src[src_idx]) << 16 | u32::from(src[src_idx + 1]) << 8;
+            dst[dst_idx] = encode_map[(val >> 18 & 0x3F) as usize];
             dst[dst_idx + 1] = encode_map[(val >> 12 & 0x3F) as usize];
             dst[dst_idx + 2] = encode_map[(val >> 6 & 0x3F) as usize];
             dst[dst_idx + 3] = PAD_CHAR;
@@ -384,7 +384,7 @@ fn from_char(b: u8, decode_map: &[u8]) -> Result<u8, InvalidByteError> {
     if out == 0xFF {
         return Err(InvalidByteError::new(b));
     }
-    return Ok(out);
+    Ok(out)
 }
 
 /// Decode base64 bytes to raw bytes
@@ -416,12 +416,12 @@ pub fn decode(dst: &mut [u8], src: &[u8], decode_map: &[u8]) -> Result<usize, Ba
     let mut src_idx = 0;
     let mut dst_idx = 0;
     while src_idx + 4 < src_len {
-        let val: u32 = u32::from(from_char(src[src_idx + 0], decode_map)?) << 18
+        let val: u32 = u32::from(from_char(src[src_idx], decode_map)?) << 18
             | u32::from(from_char(src[src_idx + 1], decode_map)?) << 12
             | u32::from(from_char(src[src_idx + 2], decode_map)?) << 6
             | u32::from(from_char(src[src_idx + 3], decode_map)?);
 
-        dst[dst_idx + 0] = ((val >> 16) & 0xFF) as u8;
+        dst[dst_idx] = ((val >> 16) & 0xFF) as u8;
         dst[dst_idx + 1] = ((val >> 8) & 0xFF) as u8;
         dst[dst_idx + 2] = (val & 0xFF) as u8;
 
@@ -432,25 +432,25 @@ pub fn decode(dst: &mut [u8], src: &[u8], decode_map: &[u8]) -> Result<usize, Ba
     // Process last 4 bytes
     if src[src_idx + 2] == b'=' {
         // two padding char, [c c = =], convert to one dst byte
-        let val: u32 = u32::from(from_char(src[src_idx + 0], decode_map)?) << 18
+        let val: u32 = u32::from(from_char(src[src_idx], decode_map)?) << 18
             | u32::from(from_char(src[src_idx + 1], decode_map)?) << 12;
-        dst[dst_idx + 0] = ((val >> 16) & 0xFF) as u8;
+        dst[dst_idx] = ((val >> 16) & 0xFF) as u8;
         dst_idx += 1;
     } else if src[src_idx + 3] == b'=' {
         // one padding char, [c c c =], convert to two dst byte
-        let val: u32 = u32::from(from_char(src[src_idx + 0], decode_map)?) << 18
+        let val: u32 = u32::from(from_char(src[src_idx], decode_map)?) << 18
             | u32::from(from_char(src[src_idx + 1], decode_map)?) << 12
             | u32::from(from_char(src[src_idx + 2], decode_map)?) << 6;
-        dst[dst_idx + 0] = ((val >> 16) & 0xFF) as u8;
+        dst[dst_idx] = ((val >> 16) & 0xFF) as u8;
         dst[dst_idx + 1] = ((val >> 8) & 0xFF) as u8;
         dst_idx += 2;
     } else {
         // no padding char, [c c c c], convert to three dst byte
-        let val: u32 = u32::from(from_char(src[src_idx + 0], decode_map)?) << 18
+        let val: u32 = u32::from(from_char(src[src_idx], decode_map)?) << 18
             | u32::from(from_char(src[src_idx + 1], decode_map)?) << 12
             | u32::from(from_char(src[src_idx + 2], decode_map)?) << 6
             | u32::from(from_char(src[src_idx + 3], decode_map)?);
-        dst[dst_idx + 0] = ((val >> 16) & 0xFF) as u8;
+        dst[dst_idx] = ((val >> 16) & 0xFF) as u8;
         dst[dst_idx + 1] = ((val >> 8) & 0xFF) as u8;
         dst[dst_idx + 2] = (val & 0xFF) as u8;
         dst_idx += 3;
