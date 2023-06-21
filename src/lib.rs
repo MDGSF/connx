@@ -1,4 +1,5 @@
 pub mod encoding;
+pub mod minidds;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
